@@ -1,0 +1,10 @@
+[Unit]
+Description=A 2-phase character generator useful for speed tests.
+Documentation=https://github.com/tommie/chargen2p
+PartOf=chargen2pd@.service
+
+[Socket]
+ListenStream=0.0.0.0:chargen
+
+[Install]
+WantedBy=sockets.target

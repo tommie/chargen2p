@@ -1,0 +1,13 @@
+[Unit]
+Description=A 2-phase character generator useful for speed tests.
+Documentation=https://github.com/tommie/chargen2p
+After=network.target
+Requires=chargen2pd.socket
+
+[Service]
+ExecStart=chargen2pd -listen-addr systemd:0
+StandardInput=socket
+StandardOutput=socket
+
+[Install]
+WantedBy=multi-user.target
