@@ -1,6 +1,7 @@
 # 2-Phase Character Generator
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/tommie/chargen2p.svg)](https://pkg.go.dev/github.com/tommie/chargen2p)
+[![CircleCI](https://circleci.com/gh/tommie/chargen2p/tree/main.svg?style=svg)](https://circleci.com/gh/tommie/chargen2p/tree/main)
 
 This project is a random data generator that can be used to test
 network performance (more specifically: throughput).
