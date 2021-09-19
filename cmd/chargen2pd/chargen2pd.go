@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	listenAddr      = flag.String("listen-addr", "tcp:localhost:19", "TCP address to listen for connections on. Use `systemd:0` for Systemd socket activation.")
-	maxConns        = flag.Uint("max-conns", 10, "Maximum number of simultaneous connections.")
-	connTimeoutSecs = flag.Int("conn-timeout", 10, "Connection timeout in seconds.")
+	listenAddr  = flag.String("listen-addr", "tcp:localhost:19", "TCP address to listen for connections on. Use `systemd:0` for Systemd socket activation.")
+	maxConns    = flag.Uint("max-conns", 10, "Maximum number of simultaneous connections.")
+	connTimeout = flag.Duration("conn-timeout", 10*time.Second, "Connection timeout.")
 
 	logPerConnection = flag.Bool("log-per-connection", true, "Whether to log statistics for each connection.")
 	standaloneLog    = flag.Bool("standalone-log", true, "Log to stderr, with time prefix.")
@@ -51,7 +51,7 @@ func run(ctx context.Context) error {
 		MaxConns: int(*maxConns),
 		ConnContext: func(ctx context.Context, _ net.Conn) context.Context {
 			// The parent context will be cancelled for us.
-			cctx, _ := context.WithTimeout(ctx, time.Duration(*connTimeoutSecs)*time.Second)
+			cctx, _ := context.WithTimeout(ctx, *connTimeout)
 			return cctx
 		},
 	}
