@@ -20,7 +20,13 @@ func TestMeasureThroughput(t *testing.T) {
 
 	go s.Serve(ctx, l)
 
-	got, err := MeasureThroughput(ctx, l.Addr().Network(), l.Addr().String(), WithMaxBytes(128*bufSize), WithMaxDuration(5*time.Second), WithMinIterations(4), WithTolerance(0.5), WithDialer(&net.Dialer{}))
+	var i int
+	now := func() time.Time {
+		i++
+		return time.Date(2006, 1, 2, 15, 4, 5, i, time.UTC)
+	}
+
+	got, err := MeasureThroughput(ctx, l.Addr().Network(), l.Addr().String(), WithMaxBytes(128*bufSize), WithMaxDuration(5*time.Second), WithMinIterations(4), WithTolerance(0.5), WithDialer(&net.Dialer{}), WithTime(now))
 	if err != nil {
 		t.Fatalf("MeasureThroughput failed: %v", err)
 	}

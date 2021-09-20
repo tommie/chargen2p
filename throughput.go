@@ -17,6 +17,7 @@ func MeasureThroughput(ctx context.Context, network, addr string, opts ...Measur
 		minIters:  8,
 		tolerance: 0.05,
 		netDialer: &net.Dialer{},
+		now:       time.Now,
 	}
 	for _, opt := range opts {
 		if err := opt(mto); err != nil {
@@ -31,12 +32,13 @@ func MeasureThroughput(ctx context.Context, network, addr string, opts ...Measur
 	}
 	i := 0
 	for ; ti.NumReadBytes+n <= mto.maxBytes; i++ {
-		dstart := time.Now()
+		dstart := mto.now()
 		c, err := dial(ctx, network, addr, mto.netDialer)
 		if err != nil {
 			return nil, err
 		}
-		dend := time.Now()
+		dend := mto.now()
+		c.now = mto.now
 
 		nw, wdur, err := c.Send(ctx, n)
 		if err != nil {
@@ -134,12 +136,20 @@ func WithDialer(d NetDialer) MeasureThroughputOpt {
 	}
 }
 
+func WithTime(f func() time.Time) MeasureThroughputOpt {
+	return func(opts *measureThroughputOpts) error {
+		opts.now = f
+		return nil
+	}
+}
+
 type measureThroughputOpts struct {
 	maxBytes  int
 	maxDur    time.Duration
 	minIters  int
 	tolerance float64
 	netDialer NetDialer
+	now       func() time.Time
 }
 
 // A ThroughputInfo contains various measurements from a throughput
