@@ -47,12 +47,19 @@ func MeasureThroughput(ctx context.Context, network, addr string, opts ...Measur
 			return nil, err
 		}
 
-		if i > 0 {
+		ti.DialDuration += dend.Sub(dstart)
+		ti.NumWrittenBytes += nw
+		ti.WriteDuration += wdur
+		ti.NumReadBytes += nr
+		ti.ReadDuration += rdur
+		ti.ReadLatency += frdur
+
+		if i > 1 {
 			// This is a simple relative error tolerance
 			// check. Real-world use will determine if it needs to be
 			// more statistically robust.
-			ti.WorstAccuracy = math.Abs(float64(nw)/float64(wdur)/(float64(ti.NumWrittenBytes)/float64(ti.WriteDuration)) - 1)
-			if v := math.Abs(float64(nr)/float64(rdur)/(float64(ti.NumReadBytes)/float64(ti.ReadDuration)) - 1); v > ti.WorstAccuracy {
+			ti.WorstAccuracy = math.Abs(float64(ti.NumWrittenBytes)/float64(ti.WriteDuration)/(float64(ti.NumWrittenBytes-nw)/float64(ti.WriteDuration-wdur)) - 1)
+			if v := math.Abs(float64(ti.NumReadBytes)/float64(ti.ReadDuration)/(float64(ti.NumReadBytes-nr)/float64(ti.ReadDuration-rdur)) - 1); v > ti.WorstAccuracy {
 				ti.WorstAccuracy = v
 			}
 
@@ -61,13 +68,6 @@ func MeasureThroughput(ctx context.Context, network, addr string, opts ...Measur
 				return ti, nil
 			}
 		}
-
-		ti.DialDuration += dend.Sub(dstart)
-		ti.NumWrittenBytes += nw
-		ti.WriteDuration += wdur
-		ti.NumReadBytes += nr
-		ti.ReadDuration += rdur
-		ti.ReadLatency += frdur
 
 		// The number of iterations matter, so we cap per-iteration
 		// size to something reasonable.
