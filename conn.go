@@ -2,11 +2,15 @@ package chargen2p
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
 	"time"
 )
+
+// ErrNoDataReceived is returned if Conn.Recv saw no data.
+var ErrNoDataReceived = errors.New("no data received")
 
 // A Conn can receive and send random data.
 type Conn struct {
@@ -99,7 +103,7 @@ func (c *Conn) Recv(ctx context.Context) (int, time.Duration, time.Duration, err
 	}
 
 	if nr == 0 {
-		return 0, 0, 0, fmt.Errorf("no data received")
+		return 0, 0, 0, ErrNoDataReceived
 	}
 
 	return int(nr), c.now().Sub(start), cw.FirstTime.Sub(start), nil

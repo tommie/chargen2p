@@ -90,7 +90,9 @@ func (s *Server) serveConn(ctx context.Context, conn net.Conn) {
 func (s *Server) handleConn(ctx context.Context, conn net.Conn, c serverConn) {
 	nr, rdur, _, err := c.Recv(ctx)
 	if err != nil {
-		if s.Reporter != nil {
+		// For servers, we don't report that no data was
+		// received. Port scans would pollute the logs.
+		if err != ErrNoDataReceived && s.Reporter != nil {
 			s.Reporter.ServedCharGen2P(conn, nil, err)
 		}
 		return
