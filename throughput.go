@@ -13,6 +13,7 @@ import (
 func MeasureThroughput(ctx context.Context, network, addr string, opts ...MeasureThroughputOpt) (*ThroughputInfo, error) {
 	mto := &measureThroughputOpts{
 		maxBytes:  1024 * 1024 * 1024,
+		maxDur:    10 * time.Second,
 		minIters:  8,
 		tolerance: 0.05,
 		netDialer: &net.Dialer{},
@@ -70,8 +71,11 @@ func MeasureThroughput(ctx context.Context, network, addr string, opts ...Measur
 		}
 
 		// The number of iterations matter, so we cap per-iteration
-		// size to something reasonable.
-		if n < mto.maxBytes/mto.minIters {
+		// size to something reasonable. We don't want to hit a
+		// server-side timeout either.
+		wdt := time.Duration(2 * n * int(ti.WriteDuration) / int(ti.NumWrittenBytes))
+		rdt := time.Duration(2 * n * int(ti.ReadDuration) / int(ti.NumReadBytes))
+		if n < mto.maxBytes/mto.minIters && (i == 0 || wdt+rdt < mto.maxDur) {
 			n *= 2
 		}
 	}
@@ -89,6 +93,16 @@ type MeasureThroughputOpt func(*measureThroughputOpts) error
 func WithMaxBytes(n int) MeasureThroughputOpt {
 	return func(opts *measureThroughputOpts) error {
 		opts.maxBytes = n
+		return nil
+	}
+}
+
+// WithMaxDuration sets a cap on the duration of a single
+// connection. This should be at most what the connection timeout is
+// on the server. The default is 10s.
+func WithMaxDuration(d time.Duration) MeasureThroughputOpt {
+	return func(opts *measureThroughputOpts) error {
+		opts.maxDur = d
 		return nil
 	}
 }
@@ -122,6 +136,7 @@ func WithDialer(d NetDialer) MeasureThroughputOpt {
 
 type measureThroughputOpts struct {
 	maxBytes  int
+	maxDur    time.Duration
 	minIters  int
 	tolerance float64
 	netDialer NetDialer

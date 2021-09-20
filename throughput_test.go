@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestMeasureThroughput(t *testing.T) {
@@ -19,7 +20,7 @@ func TestMeasureThroughput(t *testing.T) {
 
 	go s.Serve(ctx, l)
 
-	got, err := MeasureThroughput(ctx, l.Addr().Network(), l.Addr().String(), WithMaxBytes(128*bufSize), WithMinIterations(4), WithTolerance(0.5), WithDialer(&net.Dialer{}))
+	got, err := MeasureThroughput(ctx, l.Addr().Network(), l.Addr().String(), WithMaxBytes(128*bufSize), WithMaxDuration(5*time.Second), WithMinIterations(4), WithTolerance(0.5), WithDialer(&net.Dialer{}))
 	if err != nil {
 		t.Fatalf("MeasureThroughput failed: %v", err)
 	}
