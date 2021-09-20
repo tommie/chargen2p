@@ -20,7 +20,7 @@ COPY --from=builder /go/bin/testthroughput /usr/local/bin/
 # Exposes the command line options as environment variables for ease of use.
 ENV LISTEN_ADDR=tcp:0.0.0.0:19
 ENV MAX_CONNS=10
-ENV CONN_TIMEOUT=10
+ENV CONN_TIMEOUT=10s
 ENV LOG_PER_CONNECTION=true
 
 EXPOSE 19
