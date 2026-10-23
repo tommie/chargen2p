@@ -1,4 +1,6 @@
-FROM golang:alpine AS builder
+ARG golang_ver=alpine
+ARG alpine_ver=latest
+FROM golang:$golang_ver AS builder
 
 WORKDIR /go/app/src
 
@@ -12,7 +14,7 @@ RUN go test ./...
 RUN go install ./cmd/...
 
 
-FROM alpine:latest
+FROM alpine:$alpine_ver
 
 COPY --from=builder /go/bin/chargen2pd /usr/local/sbin/
 COPY --from=builder /go/bin/testthroughput /usr/local/bin/
